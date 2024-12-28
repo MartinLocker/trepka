@@ -270,7 +270,7 @@ bool WifiComm::process() {
 			aClient->connect(Store::status.IP, Store::status.port);
 			state = SERVER_CONNECTING;
 			Serial.printf("Connect to server ... %s\r\n", statusName);
-//			Serial.printf("IP: %d.%d.%d.%d\r\n", Store::status.IP[0], Store::status.IP[1], Store::status.IP[2], Store::status.IP[3]);
+			Serial.printf("IP: %d.%d.%d.%d\r\n", Store::status.IP[0], Store::status.IP[1], Store::status.IP[2], Store::status.IP[3]);
 			char s[16];
 			info.showAsync("Server", statusName, info.ipToString(s, Store::status.IP));
 		}
@@ -296,12 +296,9 @@ bool WifiComm::process() {
     if (!statusUpload) {
 			state = SERVER_CONNECTED;
 		} else { // Status upload
-/*
 			if (error != 0) {
 				info.showAsync("Status", "error", ASYNC_TIMEOUT);
-			} else {
-			}		
-*/
+			} 
 			Serial.printf("\r\nStatus uploaded - exit code: %d\r\n", error);			
 			aClient->close();
 		}
@@ -622,9 +619,12 @@ void WifiComm::onData(void* arg, AsyncClient* client, void *data, size_t len) {
 			info.showAsync("Status", "uploaded", ASYNC_TIMEOUT);
 		} 
 		if (strpos((char*)data, "0\r\n\r\n") != NOT_FOUND) { // posledni chunk
-			if (error != 0) info.showAsync("Status", "error", ASYNC_TIMEOUT);
 			state = DATA_RECEIVED;	
 		}   
+		if (strpos((char*)data, "404 Not Found") != NOT_FOUND) { 
+			state = DATA_RECEIVED;	
+		}   
+		
 	}
 }
 

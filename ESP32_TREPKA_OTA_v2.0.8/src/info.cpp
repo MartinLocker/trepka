@@ -230,7 +230,7 @@ void Info::show(uint16_t idStation, uint8_t si, uint8_t type, uint32_t idEvent, 
 //  sprintf(buffer, "%s (%d)", type == TStationType::FINISH ? "FINISH" : (type == TStationType::START ? "START" : "CONTROL"), si);
   sprintf(buffer, "%s (%d)", stationName(type), si);
   display.drawString(0, 17, buffer);
-  sprintf(buffer, "Event: #%d", idEvent);
+  sprintf(buffer, "Race: #%d", idEvent);
   display.drawString(0, 33, buffer);
   char tmp[] = "DD.MM.YYYY hh:mm";
   sprintf(buffer, "%s", DateTime(time+SECONDS_FROM_1970_TO_2000+SECONDS_FROM_2000_TO_2020).toString(tmp));
@@ -246,7 +246,7 @@ void Info::show(uint32_t idEvent, uint32_t time, const char* ssid, const char* h
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_16);  
-  sprintf(buffer, "Event: %d", idEvent);
+  sprintf(buffer, "Race: %d", idEvent);
   display.drawString(0, 1, buffer);
   char date[] = "DD.MM.YYYY hh:mm";
   sprintf(buffer, "%s", DateTime(time+SECONDS_FROM_1970_TO_2000+SECONDS_FROM_2000_TO_2020).toString(date));

@@ -69,7 +69,7 @@ void Setting::processStatus() {
   Store::writeStatus(&status);
   uint32_t time = rtc.getTime();
   comm.setStatus(time);
-  if (status.ip != 0 || status.port != 80) {
+  if (status.ip != 0 || (status.port != 0 && status.port != 80)) {
 //    info.showStatus(status.IP, status.type, status.hostName);
     info.enableAsync();
     comm.start(255);  // odeslani statusu
