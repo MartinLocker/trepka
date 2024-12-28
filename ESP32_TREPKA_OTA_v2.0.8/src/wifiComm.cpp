@@ -296,13 +296,12 @@ bool WifiComm::process() {
     if (!statusUpload) {
 			state = SERVER_CONNECTED;
 		} else { // Status upload
-			if (error != 0)
+/*
+			if (error != 0) {
 				info.showAsync("Status", "error", ASYNC_TIMEOUT);
-			else
-			{
-				/* code */
-			}
-			
+			} else {
+			}		
+*/
 			Serial.printf("\r\nStatus uploaded - exit code: %d\r\n", error);			
 			aClient->close();
 		}
@@ -618,18 +617,15 @@ void WifiComm::onData(void* arg, AsyncClient* client, void *data, size_t len) {
 			state = DATA_RECEIVED;
 		}
 	} else { // Status upload
-//		if (strpos((char*)data, "HTTP/1.1") != NOT_FOUND) {
-			if (strpos((char*)data, "TOE: OK") != NOT_FOUND) {
-				error = 0;
-				info.showAsync("Status", "uploaded", ASYNC_TIMEOUT);
-			} else {
-//				error = 4;
-//				info.showAsync("Status", "error", ASYNC_TIMEOUT);
-			}   
-			state = DATA_RECEIVED;
-//		}
+		if (strpos((char*)data, "TOE: OK") != NOT_FOUND) {
+			error = 0;
+			info.showAsync("Status", "uploaded", ASYNC_TIMEOUT);
+		} 
+		if (strpos((char*)data, "0\r\n\r\n") != NOT_FOUND) { // posledni chunk
+			if (error != 0) info.showAsync("Status", "error", ASYNC_TIMEOUT);
+			state = DATA_RECEIVED;	
+		}   
 	}
-	
 }
 
 void WifiComm::onConnect(void* arg, AsyncClient* client) {
