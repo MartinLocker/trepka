@@ -1,4 +1,0 @@
-GET /health.cgi?sn=36&batt=3.80&idStation=F3&idEvent=417&time=7339&zone=%2B0200&records=108&counter=0&ssid=J28-YQ&ip=89.221.213.101&port=80&host=top.yq.cz&url=api%2Fant%2Fimport-answers&upload=1&code=1&ver=v2.0.8 HTTP/1.1
-Host: toe.yq.cz
-
-toe.yq.cz/health.cgi?sn=36&batt=3.80&idStation=F3&idEvent=417&time=7339&zone=%2B0200&records=108&counter=0&ssid=J28-YQ&ip=89.221.213.101&port=80&host=top.yq.cz&url=api%2Fant%2Fimport-answers&upload=1&code=1&ver=v2.0.8
