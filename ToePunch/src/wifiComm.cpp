@@ -392,6 +392,7 @@ char* WifiComm::requestAnt(char* req) {
 	strreplace(req, "$U", Store::auth.userName);
 	strreplace(req, "$P", Store::auth.password);
 	strreplace(req, "$E", Store::event.id);
+	strreplace(req, "$R", Store::event.id);
 	strreplace(req, "$D", date);
 	strreplace(req, "$T", ident);
 	strreplace(req, "$N", Store::station.id);
@@ -403,7 +404,9 @@ char* WifiComm::requestAnt(char* req) {
 	addParameter(&req[pos], "TOEPUNCH_ID", trep);
 	addParameter(&req[pos], "VERSION", VERSION);
 	addParameter(&req[pos], "EVENT_ID", Store::event.id & 0xFFFFFF);
+	addParameter(&req[pos], "RACE_ID", Store::event.id & 0xFFFFFF);
 	addParameter(&req[pos], "EVENT_DATE", date);
+	addParameter(&req[pos], "RACE_DATE", date);
 	addParameter(&req[pos], "STATION_NUM", Store::station.id);
 	addParameter(&req[pos], "TOE_ADDRESS", addrRecordStart % EEPROM_TOP);
 	char* crc = &req[pos];
@@ -533,6 +536,7 @@ void WifiComm::sendStatus(AsyncClient* client) {
 			addValue(&request[idx], "&batt=%4.2f", voltage);
 			addValue(&request[idx], "&idStation=%s", tmp);
 			addValue(&request[idx], "&idEvent=%d", Store::event.id);
+			addValue(&request[idx], "&idRace=%d", Store::event.id);
 			addValue(&request[idx], "&time=%d", rtc.getTime());
 			addValue(&request[idx], "&zone=");
 			addValue(&request[idx], Store::config.timeZone > 0 ? "%2B" : "%2D");
