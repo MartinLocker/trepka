@@ -554,6 +554,8 @@ void WifiComm::sendStatus(AsyncClient* client) {
 			addValue(&request[idx], "&upload=%d", (uint32_t)Store::server.upload);
 			addValue(&request[idx], "&code=%d", (uint32_t)Store::server.code);
 			addValue(&request[idx], "&ver=%s", VERSION);
+			addValue(&request[idx], "&health=%d", (uint32_t)(Store::status.act != 0));
+			addValue(&request[idx], "/%d", (uint32_t)(Store::status.pas != 0));
 		} else {
 			addValue(&request[idx], "?TIME_NTP_STARTED=%d", infoNTP.started);
 			addValue(&request[idx], "&TIME_NTP_FINISHED=%d", infoNTP.finished);

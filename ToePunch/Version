@@ -1,4 +1,9 @@
-2.0.8 - 24122901
+2.1.1
+Pridano do Health zpravy (URL query stringu) informace o stavu
+odesilani Health. Neco jako "health=0/0" nebo "health=1/1" ve
+smyslu "interval aktivni/pasivni". 
+
+2.1.0 - 24123001
 Opraven problém informace o odeslání Statusu
 
 2.0.7 - 24100601
