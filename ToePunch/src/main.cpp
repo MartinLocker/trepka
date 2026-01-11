@@ -87,6 +87,7 @@ void doStartFinish(uint32_t time) {
 
     // Kontrola ID zavodu v krabicce a ID zavodu na cipu
     bool error = data.idEvent != rfid.getIdEvent();
+//    if (error) Serial.printf("CLEAR Error\n\r");
 
     if (rfid.verifyRepaire()) { // Otestovani korektnosti zapisu na cipu, popr. pokus o opravu
       if (!punch.isPunched(data.time, data.idCompetitor, data.answer)) {
@@ -190,7 +191,7 @@ void processInfo(bool all = 1) {
   float voltage = getBattery();
   info.format(tmp, Store::station.id, Store::station.type);
   info.showLogo(tmp, VERSION, 2000);
-  info.beep(all ? 500 : 100);
+  info.beep(all ? 500 : 250); //  info.beep(all ? 500 : 100);
   delay(1500);
   sprintf(tmp, "%04d %1.2fV", Store::config.sn, voltage);
   for (int  i = 0; i < 8;  i++) {
@@ -229,7 +230,9 @@ void setup() {
 
   info.init();
 
-  if ( (int)rtc_get_reset_reason(0) != DEEPSLEEP_RESET)  {
+  int resetReason = rtc_get_reset_reason(0);
+  Serial.printf("Reset: %d\r\n", resetReason);
+  if (resetReason != DEEPSLEEP_RESET && resetReason != RTCWDT_BROWN_OUT_RESET) {
     char buffer[16];
     float voltage = getBattery();
     if (voltage < VOLTAGE_LOW) {
@@ -239,17 +242,19 @@ void setup() {
     Serial.printf("Year %d\n", rtc.now().year());
     if (rtc.now().year() == TIME_ERROR) {
       info.show("TIME", "ERROR");
-      delay(3000);
+      delay(2000);
     }
     info.format(buffer, Store::station.id, Store::station.type);
     info.showLogo(buffer, VERSION, 2000);
+  } else if (resetReason == RTCWDT_BROWN_OUT_RESET)  {
+    info.show("RESET", "Restart", 1000);
   }
 
   Store::init();
   comm.init();
 
-  if ( (int)rtc_get_reset_reason(0) != DEEPSLEEP_RESET)  {
-    processInfo(0);
+  if (resetReason != DEEPSLEEP_RESET && resetReason != RTCWDT_BROWN_OUT_RESET) {
+    processInfo(resetReason == SW_CPU_RESET ? 1 : 0);
   }
 }
 

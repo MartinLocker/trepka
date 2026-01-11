@@ -1,3 +1,3 @@
-#define VERSION "v2.1.1"
-#define FW_VERSION 25063001
+#define VERSION "v2.1.2"
+#define FW_VERSION 25092103
 

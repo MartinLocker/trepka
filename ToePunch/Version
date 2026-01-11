@@ -1,3 +1,8 @@
+2.1.2
+Oprava odesilani Fulldump
+Pokus o odlišení PowerOnReset a Brownout (pri poklesu napeni nepipa a nezobrazuje uvodni info)
+Pri NTP dva pokusy a porovnani
+
 2.1.1
 Pridano do Health zpravy (URL query stringu) informace o stavu
 odesilani Health. Neco jako "health=0/0" nebo "health=1/1" ve

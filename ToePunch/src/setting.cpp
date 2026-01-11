@@ -21,12 +21,16 @@ void Setting::processUpload() {
 void Setting::processOTA() {
   info.show("Server", "connecting", 3000);
   info.beep(500);
-  switch (comm.checkForUpdates(upgradeServer)) {
+  int result = comm.checkForUpdates(upgradeServer);
+  switch (result) {
     case  0: info.show("FW update", "OK", 3000); break;
     case -1: info.show("FW update", "Failed", 3000); break;
     case -2: info.show("FW update", "no updated", 3000); break;
     case -3: info.show("FW update", "HTTP error", 3000); break;
     case  1: info.show("Firmware", "up to date", 3000); break;
+  }
+  if (result < 0) {
+		info.beep(3000);  
   }
 }
 

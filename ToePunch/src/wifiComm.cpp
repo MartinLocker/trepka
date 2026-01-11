@@ -147,7 +147,7 @@ void WifiComm::start(uint8_t all) {
 
 		allRecords = (all > 2) ? all : 0; // priznak vynuceni odeslani vsech dat (Event, Full)
 		DEBUG_PRINTF("AllRecords: %d IsData: %d ", allRecords, Store::isData());
-		if (allRecords == 4) {
+		if (allRecords == 4) { // Full dump (adresa od 0 do 0, start nastaven jako EEPROM_TOP se automaticky bere jako 0, ale bezi cyklus)
 			addrRecordStart = EEPROM_TOP;
 			addrRecordEnd = 0;
 		} else { // Incremental, Event
@@ -673,6 +673,16 @@ void WifiComm::onError(void* arg, AsyncClient* client, int error) {
 	info.showAsync("Server", "error", ASYNC_TIMEOUT);
 }
 
+uint32_t WifiComm::getNtpTime(NTPClient timeClient) {
+  int count = 5; // pokusu o ziskani casu z NTP serveru
+	uint32_t t = 0;
+	while (!timeClient.forceUpdate() && count > 0) count--;
+	if (count > 0) {
+		t = timeClient.getEpochTime();
+	}
+	return t;
+}
+
 bool WifiComm::ntp(uint32_t ip, char* url) {
 	if (ip == 0) {
 		if (!getIPfromDNS(&ip, url)) return 0;
@@ -682,30 +692,41 @@ bool WifiComm::ntp(uint32_t ip, char* url) {
 
 	WiFiUDP ntpUDP;
 	NTPClient timeClient(ntpUDP, IPAddress(ip));
-	
+	bool result = 0;
+
 	infoNTP.started = rtc.getTime(); // ladeni F
 	char tmp[16];
 	info.show("Connecting", info.ipToString(tmp, ip));
   timeClient.begin();
-  int count = 5;
-	while (!timeClient.forceUpdate() && count > 0) count--;
-	if(count > 0) {
-		uint32_t t = timeClient.getEpochTime();
-		infoNTP.finished = rtc.getTime(); // ladeni F
-  	infoNTP.applied = t - (SECONDS_FROM_1970_TO_2000 + SECONDS_FROM_2000_TO_2020 - Store::config.timeZone*3600); // ladeni F
-  	rtc.adjustTime(t, 1); 
-		infoNTP.reset = rtc.getTime(); // ladeni F
-		Serial.print(" RTC adjusted to: ");
-		char s[] = "DD.MM.YYYY hh:mm:ss";
-		Serial.println(rtc.printTime(s, t, 1));
-	} else {
+
+	uint32_t t1 = getNtpTime(timeClient);
+
+	if (t1 > 0) {
+		delay(2000);
+		uint32_t t = getNtpTime(timeClient);
+		if (t > 0 && (t-t1)>1 && (t-t1)<3) { // cas ok
+			infoNTP.finished = rtc.getTime(); // ladeni F
+			infoNTP.applied = t - (SECONDS_FROM_1970_TO_2000 + SECONDS_FROM_2000_TO_2020 - Store::config.timeZone*3600); // ladeni F
+			rtc.adjustTime(t, 1); 
+			infoNTP.reset = rtc.getTime(); // ladeni F
+			Serial.print(" RTC adjusted to: ");
+			char s[] = "DD.MM.YYYY hh:mm:ss";
+			Serial.println(rtc.printTime(s, t, 1));
+			result = 1;
+		}
+	} 
+
+	timeClient.end();
+	wifiPowerDown();
+
+	if (!result) {
 		char tmp2[16];
 		info.show("NTP error", tmp, info.ipToString(tmp2, WiFi.localIP()));
 		Serial.println(" NTP error");
+		info.beep(3000);
 	}
-	timeClient.end();
-	wifiPowerDown();
-	return (count > 0);
+
+	return result;
 }
 
 void WifiComm::addParameter(char* s, const char* name, const char* value) {
@@ -735,7 +756,8 @@ int WifiComm::checkForUpdates(char* server) {
   int result = 0;
   String fwUrlBase = (String)"http://" + server;
   String fwVersionURL = fwUrlBase;
-  fwVersionURL.concat("firmware.version");
+  fwVersionURL.concat("firmware.version?sn=");
+  fwVersionURL.concat((String)Store::config.sn);
   Serial.println("Checking for firmware updates.");
   Serial.print("Firmware version URL: ");
   Serial.println(fwVersionURL);
@@ -760,7 +782,11 @@ int WifiComm::checkForUpdates(char* server) {
     if (newVersion != FW_VERSION) {
       Serial.println("Preparing to update");
       String fwImageURL = fwUrlBase + (String)newVersion;      
-      fwImageURL.concat(".bin");
+//      fwImageURL.concat(".bin");
+
+  		fwImageURL.concat(".bin?sn=");
+  		fwImageURL.concat((String)Store::config.sn);
+
       Serial.print("Image for upload: ");
       Serial.println(fwImageURL);
 			info.show("Downloading", tmp);

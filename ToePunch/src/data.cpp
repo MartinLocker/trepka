@@ -71,6 +71,7 @@ void Store::init() {
     TData d;
     bool stop = 0;
     uint16_t count = 0;
+    // Hledani konce zaznamu aktualniho zavodu
     while (readDataEEPROM(addrActual, &d)->idEvent == (event.id & 0x00FFFFFF) && count < EEPROM_TOP) {
       if (d.idEvent == 0xFFFFFFFF) {
         addrBase = 0;

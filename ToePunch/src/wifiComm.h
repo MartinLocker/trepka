@@ -107,6 +107,8 @@ class WifiComm {
     static char* requestRaw(char* req);
     static char* requestAnt(char* req);
     static char* requestPreoresultat(char* req);
+
+    uint32_t getNtpTime(NTPClient timeClient);
 };
 
 extern WifiComm comm; 

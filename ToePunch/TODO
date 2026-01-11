@@ -1,96 +1,49 @@
-Aktualne resene zmeny
+On Mon, Dec 22, 2025 at 11:51:38AM +0100, Martin Locker wrote:
+> k jakému posunu. Cekám na jasný pokyn, co je potreba udelat.
 
-a) Start/cil - reaguje na cip odpovedi hlaskou ERROR
-b) Kontrola - pri cipu S a neaktivnim behu casu (neni orazen start), zobrazuje misto stojiciho casu MISSING START
-c) Start (pokud je odlisny od posledniho razeni) pri razeni S (cas bezi) hlasi MISSING FINISH
-d) Cil (pokud je odlisny od posledniho razeni) pro cip S (cas stoji) hlasi MISSING START
-
-1. Zmena v oprave "poskozeneho" cipu
-- pri zjisteni ID event = 0, najde prvni volny blok pro zapis a zapise hodnotu do counteru - 1
-(posledni zaznam je povazovan za chybny a bude prepsan)
-PROVEST TESTOVANI a rozmyslet mozne scenare problemu
-
-2. U kofiguracnich cipu Server, Status, NTP, pokud bude IP 0, pak se pri konfiguraci
-pokusi zjistit z DNS (pokud selze, tak se cele nastaveni zrusi)
-
-Ziskani IP adresy z URL automaticky po zadani Server/Status
-https://www.arduino.cc/en/Reference/WiFiNINAhostByName
-
-3. Generovani URL pri odesilani dat z parametru
-
-ant.yq.cz/upload-results.cgi?ev=$E&dt=$D&type=$T&no=$N&id=$I
-
-$U - username
-$P - password
-$E - event ID
-$D - datum (je asi jedno, jestli YYMMDD nebo YYYY-MM-DD, vyber si)
-$T - typ (TS, TP, TF)
-$N - cislo trepky (kontroly, startu, cile)
-$I - identifikator (SN trepky)
-
-Dodelat urlencode parametru v dotazu
-
-4. Novy format dat a odesilanych datech doplnit pocatecni adresu zaznamu eeprom
-
-http://ant.yq.cz/results-format-4.10.html
-
-ToePunch
-
-STAMP;SN;EVENT_ID;;;ID,SI;;CARD_ID;;;S/F;;0;;
-STAMP;SN;EVENT_ID;;;ID,SI;;CARD_ID;;;P;;1;ANSWER;0
-2021/11/17 15:32:11;105;131003;;;5;52;;301158;;;P;B;0
-
-Content-Disposition: form-data; name="TOE_ADDRESS"
-Content-Type: text/plain; charset=UTF-8
-
-Address-from
-
-5. Doplnit odesilani stavu na veskere nastaveni?
-Prohlednout Liboruv navrh
+OK, pokusil jsem se sepsat, co je podle meho otevrene:
 
 
+-- seriove cislo do pozadavku na upgrade
 
-/////////////////
-- pri aplikovani cipu WIFI na displeji vypisuje prazdne hodnoty SSID a password, ale vyzera to tak, ze ich nastavil, nasledne pri info cipe ssid vypise. Tak neviem ci je to vlastnost?
-- pre info, v pripade, ze su krabicky casovo rozsynchronizovane, tak ak sa orazi finish predtym ako uplynie cas startu, tak to zobrazuje na krabicke cas okolo 1900 a nasledne uz aj pri vsetkych ostatnych. Chï¿½pem, ï¿½e je to chyba rozsynchronizovanï¿½ch hodï¿½n, ale moï¿½no mï¿½nusovï¿½ cas, ktorï¿½ prejde do plusu by bol vhodnejï¿½ï¿½. A tieï¿½ sa to prejavuje iba pri testovanï¿½, lebo v realnom svete necvakas ciel o desat sekund neskor :-)
+> Vidim to tam, ale prosim, pridat az pri skutecnem stahovani FW, abych
+> mel na stejne radce logu i verzi, co si ta trepka stahla.
 
+Pro jistotu - zatim to trepka pise jenom pri dotazu na verzi, ja bych
+to potreboval, az kdyz si opravdu verzi stahuje.
 
-Prvni dve radky bych pouzil na popis operace a chyby (Upload/Connection
-failed, NTP/No response, Upload/404 Server message...) a na 3. a 4. radce
-svou a cilovou adresu. A je treba to tam nechat svitit ne uplne kratkou
-dobu - napada me treba pul minuty nebo do prvni operace s trepkou.
+-- revize beepu a jejich delek
 
+> Omlouvam se, ale asi jsme si nerozumeli. Nemel jsem na mysli zkraceni
+> na puvodni hodnotu (jaxe mi zda, ze to ted je), ale jen z tech otravnejch
+> 2 fterin... :-) Takze jinak - mohl bys mi, prosim, sepsat VSECHNY beepy,
+> co v kodu mas, v jaky jsou situaci a kolik trvaj, a ja zkusim navrhnout
+> nejaky cas na vyzkouseni. OK?
 
-> Pokud na tom budeï¿½ trvat, chci absolutne presnï¿½ zadï¿½nï¿½, tj.:
-> 1. seznam vï¿½ech promennï¿½ch
+-- divny obsah dumpu
 
-Na tom seznamu, co jsem psal na zacatku prosince, se nic nezmenilo.
+> Porad je to divny. Pokud mas problem na svem hostingu - nechces udelat
+> ucet na top.yq.cz - ciste quli moznosti tam cist ten dump - a posilat
+> to taky tam?
 
-$U - username
-$P - password
-$E - event ID
-$D - datum (je asi jedno, jestli YYMMDD nebo YYYY-MM-DD, vyber si)
-$T - typ (TS, TP, TF)
-$N - cislo trepky (kontroly, startu, cile)
-$I - identifikator (SN trepky)
+-- nechodici HEALTH
 
-Nenapada me nic jinyho. Pomohlo by Ti nejak zasadne, kdyby jich treba byla
-jenom polovina?
+> Zase jsem zaznamenal problem s funkci
+> HEALTH, ale v miste, kde nemuzu udelat zadnej rozumnej debugging.
+> Napadlo me udelat specialni rezim HEALTH+DEBUG (zapinanej nakym opsnem
+> na HEALTH cipu), pri kterym by trepka zapisovala do svy pameti naky
+> debug informace. V prvni fazi by asi stacilo zapisovat, kdy a s cim
+> byla zavolana funkce WifiComm::onData(). Vyrobilo by to spesl typ
+> zaznamu v pameti, napr. answer=H, time=time, SI=data.length a id=
+> prvnich 8 bytu zpravy?
 
-> 2. prï¿½klad zï¿½pisu URL s promennï¿½mi
+-- nesedici cislo zavodu na cipu a ve startovni trepce
 
-Priklad je treba v tom nasem internim docu:
-/input/ArduinoUpload.php?user=$U&pass=$P&c_id=$E
+> Zjednodusil bych to - pokud nesedi cislo zavodu, rvu a neodstartuju.
+> Pokud ma poradatel startovni trepky spravne nakonfigurovany, rve to
+> jenom na prvnim startu. Pokud je ma blbe, aspon hned pozna, ze ma
+> problem a bude ho (vcas) resit. Problem je, ze nemas jak poznat,
+> co je "prvni start". Fredholm ma treba jako prvni Start 31... :-)
 
-> 3. prï¿½klad jak bude vypadat vygenerovanï¿½ URL po dosazenï¿½ hodnot promennï¿½ch
-
-/input/ArduinoUpload.php?user=forst&pass=$heslo&c_id=100700
-
-Akorat pozor na to, ze (hlavne quli heslum) budes muset retezec kontrolovat
-a pripadne kodovat, aby sel do URL zapsat (v podstate vse krome alfanumerik
-jako %XX - viz https://cs.wikipedia.org/wiki/URL_k%C3%B3dov%C3%A1n%C3%AD).
-
-> PS. Muï¿½eï¿½ zkusit na tech testovanï¿½ch trepkï¿½ch upgrade, snad se mi podarilo ten problï¿½m se zaseknutï¿½m loga nalï¿½zt.
-
-Novej upgrade cip jeste neumim, protoze tam musim posunout polohu URL.
+Dik L
 
