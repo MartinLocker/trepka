@@ -46,7 +46,7 @@ void doControl(uint32_t time) {
       if (!punch.isPunched(data.time, data.idCompetitor, data.answer)) {
 //        Store::writeData(&data); // ??? Zapsat i kdyz se mozna nepovede zapis do cipu       
         punch.setPunch(data.time, data.idCompetitor, data.answer);
-        Serial.printf("0x%04X Competitor %08d punched %02d answer %c OK!\n\r", Store::addrActual-1, data.idCompetitor, Store::station.id, data.answer);
+        Serial.printf("0x%04X Competitor %08d punched %02d answer %c OK!\n\r", Store::addrActual, data.idCompetitor, Store::station.id, data.answer);
       } 
     
       if (punch.isConfirmed()) {
@@ -87,7 +87,11 @@ void doStartFinish(uint32_t time) {
 
     // Kontrola ID zavodu v krabicce a ID zavodu na cipu
     bool error = data.idEvent != rfid.getIdEvent();
-//    if (error) Serial.printf("CLEAR Error\n\r");
+    if (error) {  
+      info.show("Race ID", "mismatch", 3000);      
+      Serial.printf("CLEAR Error\n\r");
+      return;
+    }
 
     if (rfid.verifyRepaire()) { // Otestovani korektnosti zapisu na cipu, popr. pokus o opravu
       if (!punch.isPunched(data.time, data.idCompetitor, data.answer)) {

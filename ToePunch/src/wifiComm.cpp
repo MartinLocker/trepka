@@ -297,7 +297,9 @@ bool WifiComm::process() {
 			state = SERVER_CONNECTED;
 		} else { // Status upload
 			if (error != 0) {
-				info.showAsync("Status", "error", ASYNC_TIMEOUT);
+				char s[12];
+				sprintf(s, "error %d", error);
+				info.showAsync("Status", s, ASYNC_TIMEOUT);
 			} 
 			Serial.printf("\r\nStatus uploaded - exit code: %d\r\n", error);			
 			aClient->close();

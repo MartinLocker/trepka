@@ -210,7 +210,7 @@ class Store {
     static uint8_t  antRecord(uint16_t addr, char* data, char ident, bool);
     static uint16_t antData(char* data, uint16_t, uint16_t, bool);
 
-    static void   clearEEPROM();
+    static void   clearEEPROM(bool full = 1);
     static void   readEEPROM(uint16_t addr, uint8_t *data, uint8_t count);
     static void   writeEEPROM(uint16_t addr, uint8_t *data, uint8_t count);
     static void   setBatteryCalibration(uint32_t);

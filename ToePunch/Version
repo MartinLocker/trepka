@@ -1,5 +1,9 @@
+2.1.3  - 260308
+Kontrola a neorazeni startu v pripade nevynulovaneho cipu 
+Doplneni sn pri stahovani fw 
+Pri chybe Status error pridano zobrazeni cisla chyby
+
 2.1.2
-Oprava odesilani Fulldump
 Pokus o odlišení PowerOnReset a Brownout (pri poklesu napeni nepipa a nezobrazuje uvodni info)
 Pri NTP dva pokusy a porovnani
 

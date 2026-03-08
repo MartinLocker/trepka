@@ -72,7 +72,7 @@ void Store::init() {
     bool stop = 0;
     uint16_t count = 0;
     // Hledani konce zaznamu aktualniho zavodu
-    while (readDataEEPROM(addrActual, &d)->idEvent == (event.id & 0x00FFFFFF) && count < EEPROM_TOP) {
+    while ((readDataEEPROM(addrActual, &d)->idEvent & 0x00FFFFFF) == (event.id & 0x00FFFFFF) && count < EEPROM_TOP) {
       if (d.idEvent == 0xFFFFFFFF) {
         addrBase = 0;
         addrActual = 0;
@@ -390,7 +390,8 @@ String Store::dataToString(TData d) {
   return s;
 }
 
-void Store::clearEEPROM() {
+// Mazani EEPROM, 0 .. vymaz dat, 1 .. maze i konfiguraci krome sn a bat
+void Store::clearEEPROM(bool full) {
   uint8_t tmp[EEPROM_BLOCK]; 
   for (uint8_t i = 0; i < EEPROM_BLOCK; i++) {
     tmp[i] = 0xFF;
@@ -399,15 +400,20 @@ void Store::clearEEPROM() {
   for (uint32_t addr = 0; addr < EEPROM_CONF; addr += EEPROM_BLOCK) { 
     writeEEPROM(addr, tmp, EEPROM_BLOCK); 
   } 
-  // Vymaz pameti konfigurace
-  writeEEPROM(EEPROM_CONF + sizeof(TConfig), tmp, EEPROM_BLOCK - sizeof(TConfig)); 
-  for (uint32_t addr = EEPROM_CONF + EEPROM_BLOCK; addr < EEPROM_SIZE * (1024/8); addr += EEPROM_BLOCK) { 
-    writeEEPROM(addr, tmp, EEPROM_BLOCK); 
+
+  if (full) {
+    // Vymaz pameti konfigurace
+    writeEEPROM(EEPROM_CONF + sizeof(TConfig), tmp, EEPROM_BLOCK - sizeof(TConfig)); 
+    for (uint32_t addr = EEPROM_CONF + EEPROM_BLOCK; addr < EEPROM_SIZE * (1024/8); addr += EEPROM_BLOCK) { 
+      writeEEPROM(addr, tmp, EEPROM_BLOCK); 
+    }
+  } else {
+    memset(&event, 0xFF, sizeof(TEvent));
+    memset(&addrBase, 0xFF, sizeof(addrBase));
+    writeEEPROM(EEPROM_ADDR, (uint8_t*)&addrBase, sizeof(addrBase));
+    writeEEPROM(EEPROM_EVENT, (uint8_t*)&event, sizeof(TEvent));
   } 
 }
-
-#define EEPROM_CONF     (EEPROM_SIZE * 128 - CDATA)
-
 
 void Store::readEEPROM(uint16_t addr, uint8_t *data, uint8_t count) {
   Wire.beginTransmission(AddrEEPROM);
