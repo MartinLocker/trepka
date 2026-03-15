@@ -28,6 +28,7 @@ class Info {
     char* format(char*, uint8_t, uint8_t);
     char* ipToString(char*, IPAddress);
     void beep(uint16_t);
+    void beep(uint16_t, uint8_t);
     void start();
     void process();
     bool isActive();

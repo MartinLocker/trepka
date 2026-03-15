@@ -1,7 +1,8 @@
-2.1.3  - 260308
+2.1.3  - 260314
 Kontrola a neorazeni startu v pripade nevynulovaneho cipu 
 Doplneni sn pri stahovani fw 
 Pri chybe Status error pridano zobrazeni cisla chyby
+Pipani resetu pri poklesu napeti
 
 2.1.2
 Pokus o odlišení PowerOnReset a Brownout (pri poklesu napeni nepipa a nezobrazuje uvodni info)

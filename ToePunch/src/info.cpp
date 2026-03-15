@@ -45,6 +45,14 @@ void Info::beep(uint16_t x) {
   }
 }
 
+void Info::beep(uint16_t x, uint8_t n) {
+  for (uint i = 1; i < n; i++) {
+    beep(x);
+    delay(x);
+  }
+  beep(x);
+}
+
 void Info::start() {
   time = millis() - TIME_BEEP;
   counter = TIMES_BEEP * 2;  

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../fw_vyvoj/ESP32_CONFIG"
+		},
+		{
+			"path": "../fw_vyvoj/ESP32_TREPKA_TEST_ALL"
+		},
+		{
+			"path": "ToePunch"
+		}
+	],
+	"settings": {}
+}

@@ -195,7 +195,7 @@ void processInfo(bool all = 1) {
   float voltage = getBattery();
   info.format(tmp, Store::station.id, Store::station.type);
   info.showLogo(tmp, VERSION, 2000);
-  info.beep(all ? 500 : 250); //  info.beep(all ? 500 : 100);
+  info.beep(all ? 500 : 250);
   delay(1500);
   sprintf(tmp, "%04d %1.2fV", Store::config.sn, voltage);
   for (int  i = 0; i < 8;  i++) {
@@ -221,17 +221,13 @@ void backDoor() {
   info.beep(500);  
 }
 
-
 void setup() {
   Serial.begin(115200); // Initialize serial communications with the PC
   rfid.init(); // Init MFRC522 card 
 
   Store::begin();
-
   rtc.init();
-
   getBattery();
-
   info.init();
 
   int resetReason = rtc_get_reset_reason(0);
@@ -251,7 +247,9 @@ void setup() {
     info.format(buffer, Store::station.id, Store::station.type);
     info.showLogo(buffer, VERSION, 2000);
   } else if (resetReason == RTCWDT_BROWN_OUT_RESET)  {
+    // reset poklesem napeti
     info.show("RESET", "Restart", 1000);
+    info.beep(100, 3);
   }
 
   Store::init();

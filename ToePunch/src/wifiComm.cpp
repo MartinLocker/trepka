@@ -753,7 +753,7 @@ void WifiComm::addEnd(char* s) {
 
 int WifiComm::checkForUpdates(char* server) {
 
-	if (!connectToWifi()) return -1;
+	if (!connectToWifi()) return -3;
 
   int result = 0;
   String fwUrlBase = (String)"http://" + server;
@@ -777,14 +777,13 @@ int WifiComm::checkForUpdates(char* server) {
   if (httpCode == 200) {
     String newFWVersion = httpClient.getString();
     Serial.print("Current firmware version: ");
-    Serial.println(FW_VERSION);
+    Serial.println(BUILD);
     Serial.print("Available firmware version: ");
     Serial.println(newFWVersion);
     int newVersion = newFWVersion.toInt();
-    if (newVersion != FW_VERSION) {
+    if (newVersion != BUILD) {
       Serial.println("Preparing to update");
       String fwImageURL = fwUrlBase + (String)newVersion;      
-//      fwImageURL.concat(".bin");
 
   		fwImageURL.concat(".bin?sn=");
   		fwImageURL.concat((String)Store::config.sn);
