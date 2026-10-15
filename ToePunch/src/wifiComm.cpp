@@ -248,7 +248,7 @@ bool WifiComm::process() {
 		Serial.print("Host Port: ");
 		Serial.println(hostPort);
 */
-    if (!statusUpload) {
+    	if (!statusUpload) {
 			// pro pripojeni na mobil 
 			if (Store::server.port == 1968) { // ANT master server
 				hostIP = WiFi.gatewayIP();
@@ -259,7 +259,7 @@ bool WifiComm::process() {
 			aClient->connect(hostIP, hostPort);
 			state = SERVER_CONNECTING;
 			Serial.printf("Connect to server ... %s\r\n", hostName);
-  		char s[16];
+  			char s[16];
 			info.showAsync("Server", hostName, info.ipToString(s, hostIP));
 		} else { // Status upload
 			if (Store::status.port == 1968) { // ANT master server
@@ -293,7 +293,7 @@ bool WifiComm::process() {
 	}
 
 	if (state == DATA_RECEIVED) {
-    if (!statusUpload) {
+    	if (!statusUpload) {
 			state = SERVER_CONNECTED;
 		} else { // Status upload
 			if (error != 0) {
@@ -549,10 +549,10 @@ void WifiComm::sendStatus(AsyncClient* client) {
 			addValue(&request[idx], "&ssid=%s", Store::wifi.ssid);
 			addValue(&request[idx], "&ip=%d.%d.%d.%d", Store::server.IP);
 			addValue(&request[idx], "&port=%d", (uint32_t)Store::server.port);
-			addValue(&request[idx], "&host=%s", Store::server.hostName);
+			addValue(&request[idx], "&host=%s", Store::server.hostName[0] == '\xFF' ? "" : Store::server.hostName);
 			char s[512];
 			urlencode(s, Store::server.hostURL);
-			addValue(&request[idx], "&url=%s", s);
+			addValue(&request[idx], "&url=%s", Store::server.hostURL[0] == '\xFF' ? "" : s);
 			addValue(&request[idx], "&upload=%d", (uint32_t)Store::server.upload);
 			addValue(&request[idx], "&code=%d", (uint32_t)Store::server.code);
 			addValue(&request[idx], "&ver=%s", VERSION);
@@ -626,9 +626,16 @@ void WifiComm::onData(void* arg, AsyncClient* client, void *data, size_t len) {
 			error = 0;
 			info.showAsync("Status", "uploaded", ASYNC_TIMEOUT);
 		} 
+		else
+		if (strpos((char*)data, "TOE: ER") != NOT_FOUND) {
+			error = 5;
+			info.showAsync("Status", "server error", ASYNC_TIMEOUT);
+		} 
+		else
 		if (strpos((char*)data, "0\r\n\r\n") != NOT_FOUND) { // posledni chunk
 			state = DATA_RECEIVED;	
 		}   
+		else
 		if (strpos((char*)data, "404 Not Found") != NOT_FOUND) { 
 			state = DATA_RECEIVED;	
 		}   
