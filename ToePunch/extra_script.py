@@ -22,6 +22,9 @@ def after_build(source, target, env):
     version_file = os.path.join(dest_dir, "firmware.version")
     with open(version_file, 'w', encoding='utf-8') as f:
         f.write(f"{build}\n")
+    version_file = os.path.join(dest_dir, "version")
+    with open(version_file, 'w', encoding='utf-8') as f:
+        f.write(f"{build}\n")
     print(f"Firmware copied to: {dest_file}")
 
 env.AddPostAction("$BUILD_DIR/firmware.bin", after_build)
