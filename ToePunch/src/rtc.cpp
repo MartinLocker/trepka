@@ -17,7 +17,7 @@ void RTC::init() {
   
   // nastaveni vnitrniho RTC dle externiho RTC
   uint32_t t = getRTCTime();
-  struct timeval tset = {.tv_sec = t};
+  struct timeval tset = {.tv_sec = (time_t)t};
   settimeofday(&tset, NULL);
 }
 
@@ -38,7 +38,7 @@ uint32_t RTC::getRTCTime() {
 
 void RTC::adjustTime(uint32_t t, bool unix) {
   t =  t + (unix ? 0 : SECONDS_FROM_1970_TO_2000 + SECONDS_FROM_2000_TO_2020 - Store::config.timeZone*3600);
-  struct timeval tset = {.tv_sec = t};
+  struct timeval tset = {.tv_sec = (time_t)t};
   settimeofday(&tset, NULL);  
   adjust(DateTime(t));
 }
