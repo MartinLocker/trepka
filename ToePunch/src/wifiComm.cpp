@@ -140,9 +140,9 @@ void WifiComm::start(uint8_t all) {
 	}
 
 	error = 0;
-  statusUpload = (all > 250);
+    statusUpload = (all > 250);
 
-  if (!statusUpload) {
+    if (!statusUpload) {
 		if (Store::server.upload != ONPUNCH && all == 1) return; 
 
 		allRecords = (all > 2) ? all : 0; // priznak vynuceni odeslani vsech dat (Event, Full)
@@ -282,13 +282,15 @@ bool WifiComm::process() {
 				sendToServer(aClient);			
 			} else {
 				// Zobrazit OK/Error na displeji
-				if (error == 0) Serial.printf("\r\n%d records uploaded ok\r\n", countSum);
+				if (error == 0)
+					Serial.printf("\r\n%d records uploaded ok\r\n", countSum);
 				Serial.printf("Exit code: %d\r\n", error);
 				aClient->close();
 			}	
 		} else {
 			sendStatus(aClient);
 			error = 4;
+			Serial.println("\r\nStatus: SERVER_CONNECTED");			
 		}
 	}
 
@@ -296,11 +298,11 @@ bool WifiComm::process() {
     	if (!statusUpload) {
 			state = SERVER_CONNECTED;
 		} else { // Status upload
-			if (error != 0) {
-				char s[12];
-				sprintf(s, "error %d", error);
-				info.showAsync("Status", s, ASYNC_TIMEOUT);
-			} 
+			// if (error != 0) {
+			// 	char s[12];
+			// 	sprintf(s, "error %d", error);
+			// 	info.showAsync("Status", s, ASYNC_TIMEOUT);
+			// } 
 			Serial.printf("\r\nStatus uploaded - exit code: %d\r\n", error);			
 			aClient->close();
 		}
@@ -486,6 +488,7 @@ void WifiComm::sendToServer(AsyncClient* client) {
 	} else {
 		error = 1;
 		Serial.println("Space error");
+		info.showAsync("Connection", "space error", ASYNC_TIMEOUT);
 		state = SERVER_CONNECTED; // ukonceni spojeni
 	}
 }
@@ -528,7 +531,7 @@ void WifiComm::sendStatus(AsyncClient* client) {
 
 	if (client->space() > 4096 && client->canSend()) { 
 		char tmp[4];
-	  info.format(tmp, Store::station.id, Store::station.type);
+	    info.format(tmp, Store::station.id, Store::station.type);
 
 		idx = 0;
 		addValue(&request[idx], "GET /%s", Store::status.hostURL);
@@ -572,6 +575,7 @@ void WifiComm::sendStatus(AsyncClient* client) {
 	} else {
 		error = 1;
 		Serial.println("Space error");
+		info.showAsync("Connection", "space error", ASYNC_TIMEOUT);
 		state = DATA_RECEIVED; // ukonceni spojeni
 	}
 }
@@ -590,7 +594,10 @@ void WifiComm::onData(void* arg, AsyncClient* client, void *data, size_t len) {
 	  Serial.write(&p[i], len-i);
 	#endif	
 
-  if (!statusUpload) { // neni odesilani stavu
+	size_t pos;
+	char * msg;
+
+    if (!statusUpload) { // neni odesilani stavu
 		// nastav status dat jako odeslane, ??? doplnit test
 		if (Store::server.code == PREO)  { // Doplnit kontrolu potvrzeni dat serverem
 			if (strpos((char*)data, "Done!") != NOT_FOUND) {
@@ -609,7 +616,8 @@ void WifiComm::onData(void* arg, AsyncClient* client, void *data, size_t len) {
 			state = DATA_RECEIVED;
 		} else if ((Store::server.code == ANT || Store::server.code == RAW) && strpos((char*)data, "ANT:") != NOT_FOUND) {
 			if (strpos((char*)data, "ANT: OK") != NOT_FOUND) {
-				if (!allRecords) Store::confirmData(addrRecordConfirm, count); 
+				if (!allRecords)
+					Store::confirmData(addrRecordConfirm, count); 
 				DEBUG_PRINTF("\r\n%d records uploaded ok\r\n", count);
 				char tmp[16];
 				sprintf(tmp, "%d records", countSum);
@@ -627,16 +635,31 @@ void WifiComm::onData(void* arg, AsyncClient* client, void *data, size_t len) {
 			info.showAsync("Status", "uploaded", ASYNC_TIMEOUT);
 		} 
 		else
-		if (strpos((char*)data, "TOE: ER") != NOT_FOUND) {
+		if ((pos = strpos((char*)data, "TOE: ER")) != NOT_FOUND) {
 			error = 5;
-			info.showAsync("Status", "server error", ASYNC_TIMEOUT);
+			msg = ((char *)data) + pos;
+			pos = strpos(msg, "\r");
+			if(pos != NOT_FOUND) {
+				msg[pos] = '\0';
+			}
+			Serial.printf("\r\nStatus - server response: %s\r\n", msg);
+			info.showAsync("Status", msg + 7, ASYNC_TIMEOUT);
+			state = DATA_RECEIVED;
 		} 
 		else
 		if (strpos((char*)data, "0\r\n\r\n") != NOT_FOUND) { // posledni chunk
-			state = DATA_RECEIVED;	
+			state = DATA_RECEIVED;
 		}   
 		else
-		if (strpos((char*)data, "404 Not Found") != NOT_FOUND) { 
+		if ((pos = strpos((char*)data, "HTTP/1.1 4")) != NOT_FOUND || (pos = strpos((char*)data, "HTTP/1.1 5")) != NOT_FOUND) { 
+			error = 6;
+			msg = ((char *)data) + pos;
+			pos = strpos(msg, "\r");
+			if(pos != NOT_FOUND) {
+				msg[pos] = '\0';
+			}
+			Serial.printf("\r\nStatus - server response: %s\r\n", msg);
+			info.showAsync("Status", msg + 9, ASYNC_TIMEOUT);
 			state = DATA_RECEIVED;	
 		}   
 		
